@@ -10,20 +10,7 @@ let myChart = new Chart(canvasRef, {
   type: "bar",
 
   // Data Configuration
-  data: {
-    // labels for the data points
-    labels: ["Kit-Kat", "Hersey's", "Whoppers"],
-
-    // datasets (you only need 1 min.)
-    datasets: [
-      {
-        label: "Candy Sold",
-        data: [5, 12, 1],
-        // backgroundColor: ["#000000", "#666666", "#2534ef"],
-        backgroundColor: "#53ed2440",
-      },
-    ],
-  },
+  data: {},
 });
 
 // Function for getting candySold data
@@ -31,6 +18,7 @@ async function getCandySold() {
   const candySoldRawData = await fetch(`/api/candysold`);
   const candySoldData = await candySoldRawData.json();
 
+  candySold = {};
   for (let i = 0; i < candySoldData.candySold.length; i++) {
     const candyName = candySoldData.candySold[i];
     candySold[candyName] = candySold[candyName] || 0;
@@ -58,17 +46,7 @@ const allCharts = {
     config: {
       type: "bar",
 
-      data: {
-        labels: ["Kit-Kat", "Hersey's", "Whoppers"],
-
-        datasets: [
-          {
-            label: "Candy Sold",
-            data: [5, 12, 1],
-            backgroundColor: "#53ed2440",
-          },
-        ],
-      },
+      data: {},
 
       options: {
         scales: {
@@ -86,16 +64,7 @@ const allCharts = {
     config: {
       type: "pie",
 
-      data: {
-        labels: ["Kit-Kat", "Hersey's", "Whoppers"],
-
-        datasets: [
-          {
-            label: "Candy Sold",
-            data: [5, 12, 1],
-          },
-        ],
-      },
+      data: {},
     },
   },
 
@@ -104,26 +73,7 @@ const allCharts = {
     config: {
       type: "line",
 
-      data: {
-        labels: ["10/8", "10/9", "10/10"],
-        datasets: [
-          {
-            label: "Temp",
-            data: [60, 81, 90],
-            tension: 0.1,
-            fill: true,
-          },
-        ],
-      },
-
-      options: {
-        scales: {
-          y: {
-            min: 60,
-            max: 105,
-          },
-        },
-      },
+      data: {},
     },
   },
 };
@@ -140,6 +90,7 @@ Object.values(allCharts).forEach(function (chart) {
     console.log(chart.name);
     myChart.destroy();
     myChart = new Chart(canvasRef, chart.config);
+    getCandySold();
   };
   //   Add that button to the actual DOM
   document.querySelector("#chartButtons").appendChild(newButton);
@@ -150,12 +101,16 @@ function removeDatapoint() {
   myChart.update();
 }
 
-function addDatapoint() {
-  const numValue = parseFloat(document.getElementById("num").value);
+async function addDatapoint() {
   const labelValue = document.getElementById("label").value;
 
-  myChart.data.labels.push(labelValue);
-  myChart.data.datasets[0].data.push(numValue);
+  await fetch(`/api/candysold/new`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ candyName: labelValue }),
+  });
 
-  myChart.update();
+  getCandySold();
 }

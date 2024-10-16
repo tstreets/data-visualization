@@ -2,6 +2,8 @@ const express = require("express");
 
 const app = express();
 
+app.use(express.json());
+
 const candySold = [
   "Twizzlers",
   "Twizzlers",
@@ -19,6 +21,11 @@ const candySold = [
 ];
 
 app.get("/api/candysold", function (req, res) {
+  res.status(200).json({ candySold: candySold });
+});
+
+app.post("/api/candysold/new", function (req, res) {
+  candySold.push(req.body.candyName);
   res.status(200).json({ candySold: candySold });
 });
 
