@@ -1,6 +1,9 @@
 // Reference variable to canvas
 const canvasRef = document.getElementById("chart");
 
+// Variable to track candy sold
+let candySold = {};
+
 // Create the Chart instance
 let myChart = new Chart(canvasRef, {
   // Type
@@ -22,6 +25,31 @@ let myChart = new Chart(canvasRef, {
     ],
   },
 });
+
+// Function for getting candySold data
+async function getCandySold() {
+  const candySoldRawData = await fetch(`/api/candysold`);
+  const candySoldData = await candySoldRawData.json();
+
+  for (let i = 0; i < candySoldData.candySold.length; i++) {
+    const candyName = candySoldData.candySold[i];
+    candySold[candyName] = candySold[candyName] || 0;
+    // candySold[candyName] ||= 0;
+    candySold[candyName]++;
+  }
+
+  myChart.data.labels = Object.keys(candySold);
+  myChart.data.datasets = [
+    {
+      label: "Candy Sold",
+      data: Object.values(candySold),
+    },
+  ];
+
+  myChart.update();
+}
+
+getCandySold();
 
 // Create an object for storing chart info
 const allCharts = {
